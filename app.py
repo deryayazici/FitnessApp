@@ -15,5 +15,9 @@ def add_cache_control(response):
 def home():
         return render_template ('home.html')
 
+@app.route("/running")
+def running():
+     return render_template("running.html")
+
 if __name__ == '__main__':
     app.run(debug=True)

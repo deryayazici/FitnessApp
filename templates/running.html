@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% set active_page = 'running' %}
+{% block title %} RUNNING - {% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Calories Burned!</h1>
+    <form method="POST" action="{{ url_for('running') }}">
+        <div class="form-group">
+        <label for="distance">Distance (in miles):</label>
+        <input class="form-control"type="number" name="distance" step="0.01" placeholder="Enter distance" required><div class="collapse navbar-collapse" id="navbarResponsive">
+        </div>           
+        <hr>
+        <input class="btn btn-primary form-control"type="submit" value="Calculate">
+    </form>
+  {% if calories_burned is not none %}
+  <div id="result">
+    <p>Calories Burned: <span id="caloriesBurned">{{calories_burned}}</span></p>
+  </div>
+  {% endif %}
+    
+</div>
+{% endblock %}
