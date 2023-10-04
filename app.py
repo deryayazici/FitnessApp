@@ -17,6 +17,10 @@ def running():
      pdb.set_trace()
      return render_template('running.html')
 
+@app.route("/exercises")
+def exercises():
+    return render_template('base.html')
+
 
 @app.after_request
 def add_cache_control(response):
