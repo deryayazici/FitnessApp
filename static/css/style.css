@@ -1,6 +1,17 @@
 body {
     padding-top: 56px;
 }
+
 .container {
-    background-color: aliceblue;
+    background-color:rgb(10, 48, 82)
+}
+.navbar-brand {
+    padding-top: 0rem;
+    padding-bottom: 0rem;
+}
+.card-img-top {
+    object-fit: cover;
+}
+ul.navbar-nav li.nav-item a.nav-link {
+    color:rgb(73, 4, 4);
 }
