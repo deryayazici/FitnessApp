@@ -17,9 +17,9 @@ def running():
      pdb.set_trace()
      return render_template('running.html')
 
-@app.route("/exercises")
-def exercises():
-    return render_template('base.html')
+@app.route("/exercise")
+def exercise():
+    return render_template('exercise.html')
 
 
 @app.after_request
