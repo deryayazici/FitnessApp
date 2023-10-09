@@ -1,5 +1,5 @@
 import sys
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import pdb
 
 print(sys.executable)
@@ -17,8 +17,14 @@ def running():
      pdb.set_trace()
      return render_template('running.html')
 
-@app.route("/exercise", methods=["GET","POST"])
+@app.route("/exercise", methods=["GET", "POST"])
 def exercise():
+    if request.method == "POST":
+         print("Form data:")
+         print("Title: {}, Description: {}".format(
+               request.form.get("title"), request.form.get("description")
+         ))
+         return redirect(url_for("home"))
     return render_template('exercise.html')
 
 
