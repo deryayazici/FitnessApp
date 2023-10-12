@@ -1,5 +1,6 @@
 import sys
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, g 
+import sqlite3
 import pdb
 
 print(sys.executable)
@@ -19,14 +20,35 @@ def running():
 
 @app.route("/exercise", methods=["GET", "POST"])
 def exercise():
+    conn = get_db()
+    c = conn.cursor()
     if request.method == "POST":
-         print("Form data:")
-         print("Title: {}, Description: {}".format(
-               request.form.get("title"), request.form.get("description")
-         ))
-         return redirect(url_for("home"))
+         
+         c.execute("""INSERT INTO fitness(id,title, description)
+                    VALUES(?,?,?)""",
+                    (
+                        request.form.get("title"),
+                        request.form.get("description")
+                    )
+        )
+    conn.commit()
+        #  print("Form data:")
+        #  print("Title: {}, Description: {}".format(
+        #        request.form.get("title"), request.form.get("description")
+        #  ))
+    return redirect(url_for("home"))
     return render_template('exercise.html')
 
+def get_db():
+     db = getattr(g, "_database", None)
+     if db is None:
+          db = g._database = sqlite3.connect("db/fitness.db")
+     return db
+
+def close_connection():
+     db = getattr(g, "_database", None)
+     if db is not None:
+          db.close(Exception)
 
 @app.after_request
 def add_cache_control(response):
