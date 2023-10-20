@@ -9,6 +9,29 @@
     </div>
     <div class="col-lg-9">
       <div class="row my-5 card-wrapper">
+        {% if fitness %}
+        {% for item in fitness %}
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="embed-responsive embed-responsive-16by9">
+              <img class="card-img-top embed-responsive-item" src="" alt="">
+            </div>            
+            <div class="card-body">
+              <h4 class="card-title">
+                <a href="{{ url_for('running') }}" class="nav-link" style="color:darkslateblue">{{ item.title}}</a>
+              </h4>
+              <p class="card-text">{{ item.description}}</p>
+            </div>
+            <div class="card-footer">
+            </div>
+          </div>
+        </div>
+        {% end for %}
+        {% else %}
+        <h1 class="offset-lg-3">No items to show</h1>
+        {% endif %}
+
+
 
         <div class="col-lg-4 col-md-6 mb-4">
           <div class="card h-100">
