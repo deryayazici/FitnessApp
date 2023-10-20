@@ -1,6 +1,0 @@
-SQLite format 3@  �MtableexercisesexercisesCREATE TABLE exercises (
-    id INTEGER PRIMARY KEY,
-    title TEXT,
-    description TEXT     
-);
-
