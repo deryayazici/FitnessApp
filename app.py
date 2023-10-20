@@ -21,9 +21,14 @@ def exercise():
     if request.method == "POST":
         conn = get_db()
         c = conn.cursor()
+
+        c.execute("SELECT MAX(id) FROM fitness")
+        max_id = c.fetchone()[0] 
+        new_id = max_id + 1
+
         c.execute("""INSERT INTO fitness(id,title, description)
                     VALUES(?,?,?)""",
-                    (
+                    (   new_id,
                         request.form.get("title"),
                         request.form.get("description")
                     )
@@ -40,7 +45,7 @@ def exercise():
 def get_db():
      db = getattr(g, "_database", None)
      if db is None:
-          db = g._database = sqlite3.connect("db/fitness.db") 
+          db = g._database = sqlite3.connect("fitness.db") 
      return db
 
 @app.teardown_appcontext
