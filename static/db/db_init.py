@@ -12,7 +12,8 @@ def create_table():
     CREATE TABLE IF NOT EXISTS fitness (
         id INTEGER PRIMARY KEY,
         title TEXT,
-        description TEXT
+        description TEXT,
+        image TEXT
     )
     '''
     
@@ -22,6 +23,6 @@ def create_table():
     conn.close()
 
 if __name__ == '__main__':
-    
+
     create_table()
     print(f'Table created in {db_file}')

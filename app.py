@@ -8,7 +8,24 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-        return render_template ('home.html')
+    conn = get_db()
+    c = conn.cursor()
+
+    items_from_db = c.execute("""SELECT i.id, i.title, i.description, i.image
+                                 FROM fitness AS i
+                                 ORDER BY i.id DESC
+    """)
+
+    fitness = []
+    for row in items_from_db:
+        item = {
+            "id": row[0],
+            "title": row[1],
+            "description": row[2],
+            "image": row[3]
+        }
+        fitness.append(item)
+    return render_template ('home.html', fitness = fitness)
 
 
 @app.route("/running", methods=["GET","POST"])
@@ -26,11 +43,12 @@ def exercise():
         max_id = c.fetchone()[0] 
         new_id = max_id + 1
 
-        c.execute("""INSERT INTO fitness(id,title, description)
-                    VALUES(?,?,?)""",
+        c.execute("""INSERT INTO fitness(id,title, description, image)
+                    VALUES(?,?,?,?)""",
                     (   new_id,
                         request.form.get("title"),
-                        request.form.get("description")
+                        request.form.get("description"),
+                        ""
                     )
         )
         conn.commit()
