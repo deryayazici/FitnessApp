@@ -18,7 +18,7 @@
             </div>            
             <div class="card-body">
               <h4 class="card-title">
-                <a href="{{ url_for('running') }}" class="nav-link" style="color:darkslateblue">{{ item.title}}</a>
+                <a href="#">{{ item.title}}</a>
               </h4>
               <p class="card-text">{{ item.description}}</p>
             </div>
@@ -26,13 +26,10 @@
             </div>
           </div>
         </div>
-        {% end for %}
+        {% endfor %}
         {% else %}
         <h1 class="offset-lg-3">No items to show</h1>
         {% endif %}
-
-
-
         <div class="col-lg-4 col-md-6 mb-4">
           <div class="card h-100">
             <div class="embed-responsive embed-responsive-16by9">
