@@ -51,7 +51,7 @@ def exercise():
         if 'image' in request.files:
             image_file = request.files['image']
             if image_file.filename:
-                image_path = os.path.join("/Users/deryazici/fitness/static/images/", image_file.filename)
+                image_path = os.path.join(app.root_path, "static/images", image_file.filename)
                 image_file.save(image_path)
 
                 c.execute("""INSERT INTO fitness(id,title, description, image)
@@ -72,19 +72,19 @@ def exercise():
         return "No image file selected"
     return render_template('exercise.html')
 
-# # -------DELETE ITEMS IN FITNESS TABLE
-# # Delete items in fitness table
-# conn = sqlite3.connect("fitness.db")
-# cursor = conn.cursor()
+# -------DELETE ITEMS IN FITNESS TABLE
+# Delete items in fitness table
+conn = sqlite3.connect("fitness.db")
+cursor = conn.cursor()
 
-# delete_query = "DELETE FROM fitness"
+delete_query = "DELETE FROM fitness"
 
-# cursor.execute(delete_query)
+cursor.execute(delete_query)
 
-# conn.commit()
-# conn.close()
+conn.commit()
+conn.close()
 
-# # ---------------------------------------
+# ---------------------------------------
 
 def get_db():
      db = getattr(g, "_database", None)
