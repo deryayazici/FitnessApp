@@ -38,17 +38,21 @@ def exercise():
     if request.method == "POST":
         conn = get_db()
         c = conn.cursor()
-
+       
         c.execute("SELECT MAX(id) FROM fitness")
         max_id = c.fetchone()[0] 
-        new_id = max_id + 1
+
+        if max_id is None:
+            new_id = 1
+        else:
+            new_id = max_id + 1
 
         c.execute("""INSERT INTO fitness(id,title, description, image)
                     VALUES(?,?,?,?)""",
                     (   new_id,
                         request.form.get("title"),
                         request.form.get("description"),
-                        ""
+                        request.form.get("image")
                     )
         )
         conn.commit()
