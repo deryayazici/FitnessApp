@@ -60,6 +60,20 @@ def exercise():
         return redirect(url_for("home"))
     return render_template('exercise.html')
 
+# # -------DELETE ITEMS IN FITNESS TABLE
+# # Delete items in fitness table
+# conn = sqlite3.connect("fitness.db")
+# cursor = conn.cursor()
+
+# delete_query = "DELETE FROM fitness"
+
+# cursor.execute(delete_query)
+
+# conn.commit()
+# conn.close()
+
+# # ---------------------------------------
+
 def get_db():
      db = getattr(g, "_database", None)
      if db is None:
