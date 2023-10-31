@@ -70,7 +70,7 @@ def exercise():
         #  ))
                 return redirect(url_for("home"))
         return "No image file selected"
-    return render_template('exercise.html', image_filename='your_image_filename.jpg')
+    return render_template('exercise.html')
 
 @app.route("/delete_item/<int:item_id>", methods=["POST"])
 def delete_item(item_id):
