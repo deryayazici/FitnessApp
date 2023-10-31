@@ -28,10 +28,6 @@ def home():
         fitness.append(item)
     return render_template ('home.html', fitness = fitness)
 
-@app.route('/static/images/<filename>')
-def serve_image(filename):
-    return send_from_directory('static/images', filename)
-
 
 @app.route("/running", methods=["GET","POST"])
 def running():
@@ -76,6 +72,10 @@ def exercise():
                 return redirect(url_for("home"))
         return "No image file selected"
     return render_template('exercise.html')
+
+@app.route('/static/images/<filename>')
+def serve_image(filename):
+    return send_from_directory('static/images', filename)
 
 @app.route("/delete_item/<int:item_id>", methods=["POST"])
 def delete_item(item_id):
