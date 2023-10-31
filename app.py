@@ -1,5 +1,6 @@
 import sys
 from flask import Flask, render_template, request, redirect, url_for, g, send_from_directory
+from werkzeug.utils import secure_filename
 import sqlite3
 import os
 
@@ -51,8 +52,10 @@ def exercise():
         if 'image' in request.files:
             image_file = request.files['image']
             if image_file.filename:
+                image_filename = secure_filename(image_file.filename)
                 # image_path = os.path.join(app.root_path, "static/images", image_file.filename)
-                image_path = os.path.join("Users/deryazici/fitness/static/images", image_file.filename)
+                # image_path = os.path.join("Users/deryazici/fitness/static/images", image_file.filename)
+                image_path = os.path.join("uploads", image_filename)
                 image_file.save(image_path)
 
                 c.execute("""INSERT INTO fitness(id,title, description, image)
