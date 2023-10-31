@@ -55,7 +55,7 @@ def exercise():
                 image_filename = secure_filename(image_file.filename)
                 # image_path = os.path.join(app.root_path, "static/images", image_file.filename)
                 # image_path = os.path.join("Users/deryazici/fitness/static/images", image_file.filename)
-                image_path = os.path.join("static/uploads", image_filename)
+                image_path = os.path.join("uploads", image_filename)
                 image_file.save(image_path)
 
                 c.execute("""INSERT INTO fitness(id,title, description, image)
@@ -78,7 +78,7 @@ def exercise():
 
 @app.route('/static/uploads/<filename>')
 def serve_image(filename):
-    return send_from_directory('static/uploads', filename)
+    return send_from_directory('uploads', filename)
 
 @app.route("/delete_item/<int:item_id>", methods=["POST"])
 def delete_item(item_id):
