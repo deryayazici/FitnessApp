@@ -1,5 +1,5 @@
 import sys
-from flask import Flask, render_template, request, redirect, url_for, g 
+from flask import Flask, render_template, request, redirect, url_for, g, send_from_directory
 import sqlite3
 import os
 
@@ -27,6 +27,10 @@ def home():
         }
         fitness.append(item)
     return render_template ('home.html', fitness = fitness)
+
+@app.route('/static/images/<filename>')
+def serve_image(filename):
+    return send_from_directory('static/images', filename)
 
 
 @app.route("/running", methods=["GET","POST"])
