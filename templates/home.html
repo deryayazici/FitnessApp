@@ -14,7 +14,7 @@
         <div class="col-lg-4 col-md-6 mb-4">
           <div class="card h-100">
             <div class="embed-responsive embed-responsive-16by9">
-              <img class="card-img-top embed-responsive-item" src="{{ url_for('static', filename='images/your_image_filename.jpg') }}" alt="Your Image">
+              <img class="card-img-top embed-responsive-item" src="{{ url_for('static', filename='images/' + image_filename) }}" alt="Your Image">
             </div>            
             <div class="card-body">
               <h4 class="card-title">
@@ -23,6 +23,9 @@
               <p class="card-text">{{ item.description}}</p>
             </div>
             <div class="card-footer">
+              <form method="POST" action="/delete_item/{{ item.id }}" onsubmit="return confirm('Are you sure you want to delete this item? This action is irreversible.');">
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
             </div>
           </div>
         </div>
