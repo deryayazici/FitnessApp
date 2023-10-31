@@ -70,7 +70,19 @@ def exercise():
         #  ))
                 return redirect(url_for("home"))
         return "No image file selected"
-    return render_template('exercise.html')
+    return render_template('exercise.html', image_filename='your_image_filename.jpg')
+
+@app.route("/delete_item/<int:item_id>", methods=["POST"])
+def delete_item(item_id):
+    conn = get_db()
+    c = conn.cursor()
+
+    
+    c.execute("DELETE FROM fitness WHERE id = ?", (item_id,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("home"))
 
 # # -------DELETE ITEMS IN FITNESS TABLE
 # # Delete items in fitness table
