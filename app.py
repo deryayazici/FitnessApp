@@ -72,19 +72,19 @@ def exercise():
         return "No image file selected"
     return render_template('exercise.html')
 
-# -------DELETE ITEMS IN FITNESS TABLE
-# Delete items in fitness table
-conn = sqlite3.connect("fitness.db")
-cursor = conn.cursor()
+# # -------DELETE ITEMS IN FITNESS TABLE
+# # Delete items in fitness table
+# conn = sqlite3.connect("fitness.db")
+# cursor = conn.cursor()
 
-delete_query = "DELETE FROM fitness"
+# delete_query = "DELETE FROM fitness"
 
-cursor.execute(delete_query)
+# cursor.execute(delete_query)
 
-conn.commit()
-conn.close()
+# conn.commit()
+# conn.close()
 
-# ---------------------------------------
+# # ---------------------------------------
 
 def get_db():
      db = getattr(g, "_database", None)
