@@ -82,8 +82,9 @@ def exercise():
                 conn.close()
      
                 return redirect(url_for("home"))
-        return "No image file selected"
-    return render_template('exercise.html', form=form)
+            return "No image file selected"
+        return render_template('exercise.html', form=form)
+    return render_template('exercise.html', form=NewItemForm())
 
 @app.route('/static/uploads/<filename>')
 def serve_image(filename):
@@ -100,20 +101,6 @@ def delete_item(item_id):
     conn.close()
 
     return redirect(url_for("home"))
-
-# # -------DELETE ITEMS IN FITNESS TABLE
-# # Delete items in fitness table
-# conn = sqlite3.connect("fitness.db")
-# cursor = conn.cursor()
-
-# delete_query = "DELETE FROM fitness"
-
-# cursor.execute(delete_query)
-
-# conn.commit()
-# conn.close()
-
-# # ---------------------------------------
 
 def get_db():
      db = getattr(g, "_database", None)
