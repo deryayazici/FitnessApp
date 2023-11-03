@@ -72,18 +72,19 @@ def exercise():
                             (   new_id,
                                 form.title.data,
                                 form.description.data,
-                                form.image.data
+                                image_path
                             )
                 )
 
                 print ("image path: " + image_path)
                 conn.commit()
-                flash("Item {} has been successfully submitted.".format(request.form.get("title")), "success")
+                flash("Item {} has been successfully submitted.".format(form.title.data), "success")
                 conn.close()
      
                 return redirect(url_for("home"))
-            return "No image file selected"
-        return render_template('exercise.html', form=form)
+            flash("No image file selected.", "danger")
+            conn.close()
+        return "No image file selected"
     return render_template('exercise.html', form=NewItemForm())
 
 @app.route('/static/uploads/<filename>')
@@ -122,4 +123,3 @@ def add_cache_control(response):
 
 if __name__ == '__main__':
     app.run(debug=True)
-static/images/swimming.jpg
