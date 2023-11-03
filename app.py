@@ -1,12 +1,13 @@
 import sys
-from flask import Flask, render_template, request, redirect, url_for, g, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, g, send_from_directory, flash
 from werkzeug.utils import secure_filename
 import sqlite3
 import os
 
 
 app = Flask(__name__)
-
+app.config["SECRET_KEY"] = "secretkey"
+ 
 
 @app.route("/")
 def home():
@@ -69,6 +70,7 @@ def exercise():
 
                 print ("image path: " + image_path)
                 conn.commit()
+                flash("Item {} has been successfully submitted.".format(request.form.get("title")), "success")
                 conn.close()
         #  print("Form data:")
         #  print("Title: {}, Description: {}".format(
