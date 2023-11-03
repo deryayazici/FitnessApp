@@ -37,7 +37,7 @@
     </nav>
 
     <div class="container">
-    {% with messages = get_flashed_messages(with_categorizes=True) %}
+    {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
          {% for type, content in messages %}
           <div class="alert alert-{{ type }} alert-dissmissible my-4" role="alert">
