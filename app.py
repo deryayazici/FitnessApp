@@ -1,5 +1,7 @@
 import sys
 from flask import Flask, render_template, request, redirect, url_for, g, send_from_directory, flash
+from flask_wtf import FlaskForm
+from wtforms import StringField, TextAreaField, FileField, SubmitField
 from werkzeug.utils import secure_filename
 import sqlite3
 import os
@@ -7,6 +9,12 @@ import os
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secretkey"
+
+class NewItemForm(FlaskForm):
+    title       = StringField("Title")
+    description = TextAreaField("Description")
+    image       = FileField("Image")
+    submit      = SubmitField("submit")
  
 
 @app.route("/")
@@ -41,6 +49,7 @@ def exercise():
     if request.method == "POST":
         conn = get_db()
         c = conn.cursor()
+        form = NewItemForm()
        
         c.execute("SELECT MAX(id) FROM fitness")
         max_id = c.fetchone()[0] 
@@ -54,17 +63,16 @@ def exercise():
             image_file = request.files['image']
             if image_file.filename:
                 image_filename = secure_filename(image_file.filename)
-                # image_path = os.path.join(app.root_path, "static/images", image_file.filename)
-                # image_path = os.path.join("Users/deryazici/fitness/static/images", image_file.filename)
+        
                 image_path = os.path.join("static/uploads", image_filename)
                 image_file.save(image_path)
 
                 c.execute("""INSERT INTO fitness(id,title, description, image)
                             VALUES(?,?,?,?)""",
                             (   new_id,
-                                request.form.get("title"),
-                                request.form.get("description"),
-                                image_path
+                                form.title.data,
+                                form.description.data,
+                                form.image.data
                             )
                 )
 
@@ -72,13 +80,10 @@ def exercise():
                 conn.commit()
                 flash("Item {} has been successfully submitted.".format(request.form.get("title")), "success")
                 conn.close()
-        #  print("Form data:")
-        #  print("Title: {}, Description: {}".format(
-        #        request.form.get("title"), request.form.get("description")
-        #  ))
+     
                 return redirect(url_for("home"))
         return "No image file selected"
-    return render_template('exercise.html')
+    return render_template('exercise.html', form=form)
 
 @app.route('/static/uploads/<filename>')
 def serve_image(filename):
