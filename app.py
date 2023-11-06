@@ -2,6 +2,7 @@ import sys
 from flask import Flask, render_template, request, redirect, url_for, g, send_from_directory, flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, FileField, SubmitField
+from wtforms.validators import InputRequired, DataRequired, Length
 from werkzeug.utils import secure_filename
 import sqlite3
 import os
@@ -11,8 +12,8 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "secretkey"
 
 class NewItemForm(FlaskForm):
-    title       = StringField("Title")
-    description = TextAreaField("Description")
+    title       = StringField("Title", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=3, max=20, message="Input must be between 3 and 20 characters long")])
+    description = TextAreaField("Description", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=5, max=500, message="Input must be between 3 and 90 characters long")])
     image       = FileField("Image")
     submit      = SubmitField("submit")
  
