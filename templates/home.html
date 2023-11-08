@@ -21,7 +21,7 @@
             </div>            
             <div class="card-body">
               <h4 class="card-title">
-                <a href="#">{{ item.title}}</a>
+                <a href="{{ url_for('item', item_id=item.id)}}">{{ item.title}}</a>
               </h4>
               <p class="card-text">{{ item.description}}</p>
             </div>

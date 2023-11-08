@@ -16,7 +16,32 @@ class NewItemForm(FlaskForm):
     description = TextAreaField("Description", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=5, max=500, message="Input must be between 3 and 90 characters long")])
     image       = FileField("Image")
     submit      = SubmitField("submit")
- 
+
+@app.route("/item/<int:item_id")
+def item(item_id):
+    c = get_db().cursor()
+    item_from_db = c.execute("""SELECT
+                    i.id, i.title, i.description, i.image
+                    FROM
+                    fitness AS i
+                    WHERE i.id = ?""",
+                    (item_id,)
+    )
+    row = c.fetchone()
+
+    try:
+        item = {
+            "id": row[0],
+            "title": row[1],
+            "description": row[2],
+            "image": row[3]
+        }
+    except:
+        item = {}
+
+    if item:
+        return render_template("item.html", item = item)
+    return redirect(url_for("home")) 
 
 @app.route("/")
 def home():
