@@ -44,7 +44,7 @@ def item(item_id):
 
     if item:
         deleteItemForm = DeleteItemForm()
-        return render_template("item.html", item = item, deleteItemForm = deleteItemForm)
+        return render_template("item.html", item = item, deleteItemForm = deleteItemForm, item_id=item_id)
     return redirect(url_for("home")) 
 
 @app.route("/")
@@ -138,7 +138,7 @@ def delete_item(item_id):
     conn = get_db()
     c = conn.cursor()
 
-    item_from_db=c.execute("SELECT * FROM fitness WHERE id = ?", (item_id))
+    item_from_db=c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
     row = c.fetchone()
 
     try:
@@ -153,7 +153,7 @@ def delete_item(item_id):
         c.execute("DELETE FROM fitness WHERE id = ?", (item_id,))
         conn.commit()
 
-        flash(("Item {] has been successfully deleted.".format(item["title"]), "success"))
+        flash(("Item {} has been successfully deleted.".format(item["title"]), "success", "danger"))
     else:
         flash("This item dos not exist","danger")
     return redirect(url_for("home"))
