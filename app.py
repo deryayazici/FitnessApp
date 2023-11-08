@@ -20,11 +20,15 @@ class ItemForm(FlaskForm):
 class NewItemForm(ItemForm):
       submit     = SubmitField("submit")
 
-class EditItemFrom(ItemForm):
+class EditItemForm(ItemForm):
       submit     = SubmitField("Update item")
 
 class DeleteItemForm(FlaskForm):
     submit = SubmitField("Delete item")
+
+class FilterForm(FlaskForm):
+    title  = StringField("Title")
+    submit = SubmitField("Filter")
 
 @app.route("/item/<int:item_id>")
 def item(item_id):
@@ -52,11 +56,15 @@ def item(item_id):
         deleteItemForm = DeleteItemForm()
         return render_template("item.html", item = item, deleteItemForm = deleteItemForm, item_id=item_id)
     return redirect(url_for("home")) 
-
+# -----------
 @app.route("/")
 def home():
     conn = get_db()
     c = conn.cursor()
+
+    # form = FilterForm(request.args, meta={"csrf": False})
+
+    
 
     items_from_db = c.execute("""SELECT i.id, i.title, i.description, i.image
                                  FROM fitness AS i
@@ -206,7 +214,7 @@ def edit_item(item_id):
         form.title.data = item["title"]
         form.description.data = item["description"]
 
-        return render_template("edit_item.html", item=item, form=form)
+        return render_template("edit_item.html", item=item, form=form, item_id=item_id)
     else:
         flash("Item does not exist", "danger")
         return redirect(url_for("home"))
