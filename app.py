@@ -11,11 +11,17 @@ import os
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secretkey"
 
-class NewItemForm(FlaskForm):
+class ItemForm(FlaskForm):
     title       = StringField("Title", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=3, max=20, message="Input must be between 3 and 20 characters long")])
     description = TextAreaField("Description", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=5, max=500, message="Input must be between 3 and 90 characters long")])
     image       = FileField("Image")
-    submit      = SubmitField("submit")
+   
+
+class NewItemForm(ItemForm):
+      submit     = SubmitField("submit")
+
+class EditItemFrom(ItemForm):
+      submit     = SubmitField("Update item")
 
 class DeleteItemForm(FlaskForm):
     submit = SubmitField("Delete item")
@@ -157,6 +163,54 @@ def delete_item(item_id):
     else:
         flash("This item dos not exist","danger")
     return redirect(url_for("home"))
+
+@app.route("/item/<int:item_id>/edit", methods=["GET", "POST"])
+def edit_item(item_id):
+    conn = get_db()
+    c = conn.cursor()
+    item_from_db = c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
+    row = c.fetchone()
+
+    try:
+        item = {
+            "id": row[0],
+            "title": row[1],
+            "description": row[2],
+            "image": row[3]
+        }
+    except:
+        item = {}
+
+    if item:
+        form = EditItemForm()
+        
+        if form.validate_on_submit():
+            image_path = item["image"]  # Default to the existing image path
+
+            if 'image' in request.files:
+                image_file = request.files['image']
+                if image_file.filename:
+                    image_filename = secure_filename(image_file.filename)
+                    image_path = os.path.join("static/uploads", image_filename)
+                    image_file.save(image_path)
+
+            c.execute("""UPDATE fitness SET
+                        title = ?, description = ?, image = ?
+                        WHERE id = ?""",
+                        (form.title.data, form.description.data, image_path, item_id)
+            )
+            conn.commit()
+            flash("Item {} has been successfully updated.".format(form.title.data), "success")
+            return redirect(url_for("item", item_id=item_id))
+        
+        form.title.data = item["title"]
+        form.description.data = item["description"]
+
+        return render_template("edit_item.html", item=item, form=form)
+    else:
+        flash("Item does not exist", "danger")
+        return redirect(url_for("home"))
+
         
 
 def get_db():
