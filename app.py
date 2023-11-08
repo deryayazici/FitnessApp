@@ -17,7 +17,10 @@ class NewItemForm(FlaskForm):
     image       = FileField("Image")
     submit      = SubmitField("submit")
 
-@app.route("/item/<int:item_id")
+class DeleteItemForm(FlaskForm):
+    submit = SubmitField("Delete item")
+
+@app.route("/item/<int:item_id>")
 def item(item_id):
     c = get_db().cursor()
     item_from_db = c.execute("""SELECT
@@ -40,7 +43,8 @@ def item(item_id):
         item = {}
 
     if item:
-        return render_template("item.html", item = item)
+        deleteItemForm = DeleteItemForm()
+        return render_template("item.html", item = item, deleteItemForm = deleteItemForm)
     return redirect(url_for("home")) 
 
 @app.route("/")
@@ -117,17 +121,43 @@ def exercise():
 def serve_image(filename):
     return send_from_directory('uploads', filename)
 
-@app.route("/delete_item/<int:item_id>", methods=["POST"])
+# @app.route("/delete_item/<int:item_id>", methods=["POST"])
+# def delete_item(item_id):
+#     conn = get_db()
+#     c = conn.cursor()
+
+    
+#     c.execute("DELETE FROM fitness WHERE id = ?", (item_id,))
+#     conn.commit()
+#     conn.close()
+
+#     return redirect(url_for("home"))
+
+@app.route("/item/<int:item_id>/delete", methods=["POST"])
 def delete_item(item_id):
     conn = get_db()
     c = conn.cursor()
 
-    
-    c.execute("DELETE FROM fitness WHERE id = ?", (item_id,))
-    conn.commit()
-    conn.close()
+    item_from_db=c.execute("SELECT * FROM fitness WHERE id = ?", (item_id))
+    row = c.fetchone()
 
+    try:
+        item = {
+            "id": row[0],
+            "title": row[1]
+        }
+    except:
+        item = {}
+
+    if item:
+        c.execute("DELETE FROM fitness WHERE id = ?", (item_id,))
+        conn.commit()
+
+        flash(("Item {] has been successfully deleted.".format(item["title"]), "success"))
+    else:
+        flash("This item dos not exist","danger")
     return redirect(url_for("home"))
+        
 
 def get_db():
      db = getattr(g, "_database", None)
