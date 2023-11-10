@@ -1,20 +1,29 @@
 import sys
 from flask import Flask, render_template, request, redirect, url_for, g, send_from_directory, flash
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileAllowed, FileRequired
 from wtforms import StringField, TextAreaField, FileField, SubmitField
 from wtforms.validators import InputRequired, DataRequired, Length
 from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename
 import sqlite3
 import os
+import datetime
+from secrets import token_hex
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secretkey"
+app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["jpeg", "jpg", "png"]
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
+app.config["IMAGE_UPLOADS"] = os.path.join(basedir, "uploads")
 
 class ItemForm(FlaskForm):
     title       = StringField("Title", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=3, max=20, message="Input must be between 3 and 20 characters long")])
     description = TextAreaField("Description", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=5, max=500, message="Input must be between 3 and 90 characters long")])
-    image       = FileField("Image")
+    image       = FileField("Image", validators=[FileRequired(), FileAllowed(app.config["ALLOWED_IMAGE_EXTENSIONS"], "Images only!")])
    
 
 class NewItemForm(ItemForm):
@@ -82,10 +91,10 @@ def home():
         fitness.append(item)
     return render_template ('home.html', fitness = fitness)
 
+@app.route("/uploads/<filename>")
+def uploads(filename):
+    return send_from_directory(app.config["IMAGE_UPLOADS"], filename)
 
-@app.route("/running", methods=["GET","POST"])
-def running():
-     return render_template('running.html')
 
 
 @app.route("/exercise", methods=["GET", "POST"])
@@ -103,31 +112,39 @@ def exercise():
         else:
             new_id = max_id + 1
 
-        if 'image' in request.files:
-            image_file = request.files['image']
-            if image_file.filename:
-                image_filename = secure_filename(image_file.filename)
+        # if 'image' in request.files:
+        #     image_file = request.files['image']
+        #     if image_file.filename:
+        #         image_filename = secure_filename(image_file.filename)
         
-                image_path = os.path.join("static/uploads", image_filename)
-                image_file.save(image_path)
+        #         image_path = os.path.join("static/uploads", image_filename)
+        #         image_file.save(image_path)
+        if form.validate_on_submit():
+                
+                format = "%Y%m%dT%H%M%S"
+                now = datetime.datetime.utcnow().strftime(format)
+                random_string = token_hex(2)
+                filename = random_string + "_" + now + "_" + form.image.data.filename
+                filename = secure_filename(filename)
+                form.image.data.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
 
                 c.execute("""INSERT INTO fitness(id,title, description, image)
                             VALUES(?,?,?,?)""",
                             (   new_id,
                                 form.title.data,
                                 form.description.data,
-                                image_path
+                                filename
                             )
                 )
 
-                print ("image path: " + image_path)
+                # print ("image path: " + image_path)
                 conn.commit()
                 flash("Item {} has been successfully submitted.".format(form.title.data), "success")
                 conn.close()
      
                 return redirect(url_for("home"))
-            flash("No image file selected.", "danger")
-            conn.close()
+        flash("No image file selected.", "danger")
+        conn.close()
         return "No image file selected"
     return render_template('exercise.html', form=NewItemForm())
 
@@ -135,17 +152,6 @@ def exercise():
 def serve_image(filename):
     return send_from_directory('uploads', filename)
 
-# @app.route("/delete_item/<int:item_id>", methods=["POST"])
-# def delete_item(item_id):
-#     conn = get_db()
-#     c = conn.cursor()
-
-    
-#     c.execute("DELETE FROM fitness WHERE id = ?", (item_id,))
-#     conn.commit()
-#     conn.close()
-
-#     return redirect(url_for("home"))
 
 @app.route("/item/<int:item_id>/delete", methods=["POST"])
 def delete_item(item_id):
@@ -219,7 +225,9 @@ def edit_item(item_id):
         flash("Item does not exist", "danger")
         return redirect(url_for("home"))
 
-        
+@app.route("/running", methods=["GET","POST"])
+def running():
+     return render_template('running.html')        
 
 def get_db():
      db = getattr(g, "_database", None)
