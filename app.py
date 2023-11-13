@@ -95,48 +95,61 @@ def uploads(filename):
 
 
 # --- ADD NEW ITEM ------
+
+# def generate_unique_filename(original_filename):
+#     format = "%Y%m%dT%H%M%S"
+#     now = datetime.datetime.utcnow().strftime(format)
+#     random_string = token_hex(2)
+#     filename = random_string + "_" + now + "_" + secure_filename(original_filename)
+#     return filename
+
 @app.route("/exercise", methods=["GET", "POST"])
 def exercise():
-    if request.method == "POST":
-        conn = get_db()
-        c = conn.cursor()
-        form = NewItemForm()
-       
-        c.execute("SELECT MAX(id) FROM fitness")
-        max_id = c.fetchone()[0] 
-
-        if max_id is None:
-            new_id = 1
-        else:
-            new_id = max_id + 1
+        if request.method == "POST":
+            conn = get_db()
+            c = conn.cursor()
+            form = NewItemForm()
         
-        if form.validate_on_submit():
-                
-                format = "%Y%m%dT%H%M%S"
-                now = datetime.datetime.utcnow().strftime(format)
-                random_string = token_hex(2)
-                filename = random_string + "_" + now + "_" + form.image.data.filename
-                filename = secure_filename(filename)
-                form.image.data.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
+            c.execute("SELECT MAX(id) FROM fitness")
+            max_id = c.fetchone()[0] 
 
-                c.execute("""INSERT INTO fitness(id,title, description, image)
-                            VALUES(?,?,?,?)""",
-                            (   new_id,
-                                form.title.data,
-                                form.description.data,
-                                filename
-                            )
-                )
-  
-                conn.commit()
-                flash("Item {} has been successfully submitted.".format(form.title.data), "success")
-                conn.close()
-     
-                return redirect(url_for("home"))
-        flash("No image file selected.", "danger")
-        conn.close()
-        return "No image file selected"
-    return render_template('exercise.html', form=NewItemForm())
+            if max_id is None:
+                new_id = 1
+            else:
+                new_id = max_id + 1
+            
+            if form.validate_on_submit():
+                    
+                    filename = save_image_upload(form.image)
+                    
+                    
+
+                    c.execute("""INSERT INTO fitness(id,title, description, image)
+                                VALUES(?,?,?,?)""",
+                                (   new_id,
+                                    form.title.data,
+                                    form.description.data,
+                                    filename
+                                )
+                    )
+
+                    conn.commit()
+                    flash("Item {} has been successfully submitted.".format(form.title.data), "success")
+        
+                    return redirect(url_for("home"))
+            flash("No image file selected.", "danger")
+            conn.close()
+            return "No image file selected"
+        return render_template('exercise.html', form=NewItemForm())
+
+def save_image_upload(image):
+    format = "%Y%m%dT%H%M%S"
+    now = datetime.datetime.utcnow().strftime(format)
+    random_string = token_hex(2)
+    filename = random_string + "_" + now + "_" + image.data.filename
+    filename = secure_filename(filename)
+    image.data.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
+    return filename
 
 @app.route('/static/uploads/<filename>')
 def serve_image(filename):
@@ -192,52 +205,167 @@ def delete_item(item_id):
 
 # -----EDIT ITEM ---------
 
-@app.route("/item/<int:item_id>/edit", methods=["GET", "POST"])
+# @app.route("/item/<int:item_id>/edit", methods=["GET", "POST"])
+# def edit_item(item_id):
+#     conn = get_db()
+#     c = conn.cursor()
+#     item_from_db = c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
+#     row = c.fetchone()
+
+#     try:
+#         item = {
+#             "id": row[0],
+#             "title": row[1],
+#             "description": row[2],
+#             "image": row[3]
+#         }
+#     except:
+#         item = {}
+
+#     if item:
+#         form = EditItemForm()
+        
+#         if form.validate_on_submit():
+#             image_path = item["image"]  # Default to the existing image path
+
+#             if 'image' in request.files:
+#                 image_file = request.files['image']
+#                 if image_file.filename:
+#                     image_filename = secure_filename(image_file.filename)
+#                     image_path = os.path.join("static/uploads", image_filename)
+#                     image_file.save(image_path)
+
+#             c.execute("""UPDATE fitness SET
+#                         title = ?, description = ?, image = ?
+#                         WHERE id = ?""",
+#                         (form.title.data, form.description.data, image_path, item_id)
+#             )
+#             conn.commit()
+#             flash("Item {} has been successfully updated.".format(form.title.data), "success")
+#             return redirect(url_for("item", item_id=item_id))
+        
+#         form.title.data = item["title"]
+#         form.description.data = item["description"]
+
+#         return render_template("edit_item.html", item=item, form=form, item_id=item_id)
+#     else:
+#         flash("Item does not exist", "danger")
+#         return redirect(url_for("home"))
+
+
+
+# @app.route("/edit_item/<int:item_id>", methods=["GET", "POST"])
+# def edit_item(item_id):
+#     conn = get_db()
+#     c = conn.cursor()
+#     form = EditItemForm()  # Use your EditItemForm here
+
+#     if request.method == "POST" and form.validate_on_submit():
+#         # Get existing item data
+#         c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
+#         item = c.fetchone()
+
+#         if item:
+#             existing_image_filename = item["image"]
+#             # Handle the image update if a new image is provided
+#             if form.image.data:
+#                 # Save the new image with a new filename
+#                 new_image_filename = save_image_upload(form.image.data.filename)
+#                 form.image.data.save(os.path.join(app.config["IMAGE_UPLOADS"], new_image_filename))
+#             else:
+#                 # No new image provided, keep the existing image filename
+#                 new_image_filename = existing_image_filename
+
+#             # Update the item in the database
+#             c.execute(
+#                 """
+#                 UPDATE fitness
+#                 SET title=?, description=?, image=?
+#                 WHERE id=?
+#                 """,
+#                 (
+#                     form.title.data,
+#                     form.description.data,
+#                     new_image_filename,
+#                     item_id,
+#                 ),
+#             )
+#             conn.commit()
+#             flash("Item {} has been successfully updated.".format(form.title.data), "success")
+#             conn.close()
+#             return redirect(url_for("home"))
+
+#     # If it's a GET request or form validation fails, populate the form with existing data
+#     c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
+#     item = c.fetchone()
+#     if item:
+#         form.title.data = item[1]
+#         form.description.data = item[2]
+#         # Pass the existing image filename to the form to display the current image
+#         form.image.data = item[3]
+
+#     conn.close()
+#     return render_template("edit_item.html", form=form, item_id=item_id)
+
+from flask import Flask, render_template, request, redirect, url_for, flash
+import os
+from your_module import get_db, EditItemForm, save_image_upload
+
+app = Flask(__name__)
+
+@app.route("/edit_item/<int:item_id>", methods=["GET", "POST"])
 def edit_item(item_id):
-    conn = get_db()
-    c = conn.cursor()
-    item_from_db = c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
-    row = c.fetchone()
-
-    try:
-        item = {
-            "id": row[0],
-            "title": row[1],
-            "description": row[2],
-            "image": row[3]
-        }
-    except:
-        item = {}
-
-    if item:
+    with get_db() as conn:
+        c = conn.cursor()
         form = EditItemForm()
-        
-        if form.validate_on_submit():
-            image_path = item["image"]  # Default to the existing image path
 
-            if 'image' in request.files:
-                image_file = request.files['image']
-                if image_file.filename:
-                    image_filename = secure_filename(image_file.filename)
-                    image_path = os.path.join("static/uploads", image_filename)
-                    image_file.save(image_path)
+        if request.method == "POST":
+            if form.validate_on_submit():
+                c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
+                item = c.fetchone()
 
-            c.execute("""UPDATE fitness SET
-                        title = ?, description = ?, image = ?
-                        WHERE id = ?""",
-                        (form.title.data, form.description.data, image_path, item_id)
-            )
-            conn.commit()
-            flash("Item {} has been successfully updated.".format(form.title.data), "success")
-            return redirect(url_for("item", item_id=item_id))
-        
-        form.title.data = item["title"]
-        form.description.data = item["description"]
+                if not item:
+                    flash("Item not found", "error")
+                    return redirect(url_for("home"))
 
-        return render_template("edit_item.html", item=item, form=form, item_id=item_id)
-    else:
-        flash("Item does not exist", "danger")
-        return redirect(url_for("home"))
+                existing_image_filename = item["image"]
+
+                if form.image.data and form.image.data.filename:
+                    new_image_filename = save_image_upload(form.image.data.filename)
+                    form.image.data.save(os.path.join(app.config["IMAGE_UPLOADS"], new_image_filename))
+                else:
+                    new_image_filename = existing_image_filename
+
+                c.execute(
+                    """
+                    UPDATE fitness
+                    SET title=?, description=?, image=?
+                    WHERE id=?
+                    """,
+                    (
+                        form.title.data,
+                        form.description.data,
+                        new_image_filename,
+                        item_id,
+                    ),
+                )
+                conn.commit()
+                flash("Item {} has been successfully updated.".format(form.title.data), "success")
+                return redirect(url_for("home"))
+
+        c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
+        item = c.fetchone()
+        if not item:
+            flash("Item not found", "error")
+            return redirect(url_for("home"))
+
+        form.title.data = item[1]
+        form.description.data = item[2]
+        form.image.data = item[3]
+
+    return render_template("edit_item.html", form=form, item_id=item_id)
+
+
 
 
 @app.route("/running", methods=["GET","POST"])
