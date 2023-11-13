@@ -5,7 +5,6 @@ from flask_wtf.file import FileAllowed, FileRequired
 from wtforms import StringField, TextAreaField, FileField, SubmitField
 from wtforms.validators import InputRequired, DataRequired, Length
 from werkzeug.utils import secure_filename
-from werkzeug.utils import secure_filename
 import sqlite3
 import os
 import datetime
@@ -72,8 +71,6 @@ def home():
     c = conn.cursor()
 
     # form = FilterForm(request.args, meta={"csrf": False})
-
-    
 
     items_from_db = c.execute("""SELECT i.id, i.title, i.description, i.image
                                  FROM fitness AS i
