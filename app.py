@@ -37,7 +37,7 @@ class DeleteItemForm(FlaskForm):
 class FilterForm(FlaskForm):
     title  = StringField("Title")
     submit = SubmitField("Filter")
-
+# ---- SINGLE ITEM VIEW ------
 @app.route("/item/<int:item_id>")
 def item(item_id):
     c = get_db().cursor()
@@ -64,7 +64,8 @@ def item(item_id):
         deleteItemForm = DeleteItemForm()
         return render_template("item.html", item = item, deleteItemForm = deleteItemForm, item_id=item_id)
     return redirect(url_for("home")) 
-# -----------
+
+# ----------- DISPLAY ALL ITEMS -----------
 @app.route("/")
 def home():
     conn = get_db()
@@ -93,7 +94,7 @@ def uploads(filename):
     return send_from_directory(app.config["IMAGE_UPLOADS"], filename)
 
 
-
+# --- ADD NEW ITEM ------
 @app.route("/exercise", methods=["GET", "POST"])
 def exercise():
     if request.method == "POST":
@@ -108,14 +109,7 @@ def exercise():
             new_id = 1
         else:
             new_id = max_id + 1
-
-        # if 'image' in request.files:
-        #     image_file = request.files['image']
-        #     if image_file.filename:
-        #         image_filename = secure_filename(image_file.filename)
         
-        #         image_path = os.path.join("static/uploads", image_filename)
-        #         image_file.save(image_path)
         if form.validate_on_submit():
                 
                 format = "%Y%m%dT%H%M%S"
@@ -133,8 +127,7 @@ def exercise():
                                 filename
                             )
                 )
-
-                # print ("image path: " + image_path)
+  
                 conn.commit()
                 flash("Item {} has been successfully submitted.".format(form.title.data), "success")
                 conn.close()
@@ -149,31 +142,55 @@ def exercise():
 def serve_image(filename):
     return send_from_directory('uploads', filename)
 
-
+# -----DELETE ITEM ------
 @app.route("/item/<int:item_id>/delete", methods=["POST"])
+# def delete_item(item_id):
+#     conn = get_db()
+#     c = conn.cursor()
+
+#     item_from_db=c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
+#     row = c.fetchone()
+
+#     try:
+#         item = {
+#             "id": row[0],
+#             "title": row[1]
+#         }
+#     except:
+#         item = {}
+
+#     if item:
+#         c.execute("DELETE FROM fitness WHERE id = ?", (item_id,))
+#         conn.commit()
+
+#         flash(("Item {} has been successfully deleted.".format(item["title"]), "success", "danger"))
+#     else:
+#         flash("This item dos not exist","danger")
+#     return redirect(url_for("home"))
 def delete_item(item_id):
+    print("Delete item route called!")
     conn = get_db()
     c = conn.cursor()
 
-    item_from_db=c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
+    item_from_db = c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
     row = c.fetchone()
 
-    try:
+    if row:
         item = {
             "id": row[0],
             "title": row[1]
         }
-    except:
-        item = {}
 
-    if item:
         c.execute("DELETE FROM fitness WHERE id = ?", (item_id,))
         conn.commit()
 
-        flash(("Item {} has been successfully deleted.".format(item["title"]), "success", "danger"))
+        flash(f"Item {item['title']} has been successfully deleted.", "success")
     else:
-        flash("This item dos not exist","danger")
+        flash("This item does not exist", "danger")
+
     return redirect(url_for("home"))
+
+# -----EDIT ITEM ---------
 
 @app.route("/item/<int:item_id>/edit", methods=["GET", "POST"])
 def edit_item(item_id):
@@ -221,6 +238,7 @@ def edit_item(item_id):
     else:
         flash("Item does not exist", "danger")
         return redirect(url_for("home"))
+
 
 @app.route("/running", methods=["GET","POST"])
 def running():
