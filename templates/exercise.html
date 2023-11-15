@@ -20,6 +20,14 @@
                 {{ form.image.label }}
                 {{ form.image(class="form-control") }}
             </div>
+            {% if form.image.data %}
+                <img src="{{ url_for('static', filename='uploads/' + form.image.data.filename) }}" alt="Uploaded Image" style="max-width: 100%; height: auto;">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Placeholder Image" style="max-width: 100%; height: auto;">
+            {% endif %}
+            <div class="form-group">
+                {{ form.recaptcha }}
+            </div>
             <hr>
                 {{ form.submit(class="btn btn-primary form-control") }}
         </form>
