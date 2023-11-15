@@ -131,7 +131,7 @@ def exercise():
             flash("Item {} has been successfully submitted.".format(form.title.data), "success")
 
             return redirect(url_for("home"))
-        flash("No image file selected.", "danger")
+        flash("Form validation failed.", "danger")
         conn.close()
     return render_template('exercise.html', form=NewItemForm())
 
@@ -194,9 +194,10 @@ def edit_item(item_id):
 
                 existing_image_filename = item[3]
 
-                if form.image and hasattr(form.image, 'filename'):
-                    new_image_filename = save_image_upload(form.image.filename)
-                    form.image.save(os.path.join(app.config["IMAGE_UPLOADS"], new_image_filename))
+                if form.image.data:
+                    new_image_filename = save_image_upload(form.image)
+                    # form.image.save(os.path.join(app.config["IMAGE_UPLOADS"], new_image_filename))
+            
                 else:
                     new_image_filename = existing_image_filename
 
@@ -225,7 +226,7 @@ def edit_item(item_id):
 
         form.title.data = item[1]
         form.description.data = item[2]
-        form.image.data = item[3]
+        # form.image.data = item[3]
 
     return render_template("edit_item.html", form=form, item_id=item_id, item=item)
 
