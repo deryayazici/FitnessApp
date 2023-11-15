@@ -1,10 +1,12 @@
 import sys
+from typing import Any
 from flask import Flask, render_template, request, redirect, url_for, g, send_from_directory, flash
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileAllowed, FileRequired
 from wtforms import StringField, TextAreaField, FileField, SubmitField
-from wtforms.validators import InputRequired, DataRequired, Length
-from werkzeug.utils import secure_filename
+from wtforms.validators import InputRequired, DataRequired, Length, ValidationError
+from werkzeug.utils import secure_filename, escape
+from html import unescape
 import sqlite3
 import os
 import datetime
@@ -19,12 +21,53 @@ app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["jpeg", "jpg", "png"]
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 app.config["IMAGE_UPLOADS"] = os.path.join(basedir, "uploads")
 
+app.config["RECAPTCHA_PUBLIC_KEY"] = "6Lct3hApAAAAAF3shHdCcXlLhzxvJiWbT2rH56XW"
+app.config["RECAPTCHA_PRIVATE_KEY"] = "6Lct3hApAAAAALPoW_BXUgEtj5rKurAyFGb-6mp9"
+
 class ItemForm(FlaskForm):
     title       = StringField("Title", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=3, max=20, message="Input must be between 3 and 20 characters long")])
     description = TextAreaField("Description", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=5, max=500, message="Input must be between 3 and 90 characters long")])
     image       = FileField("Image", validators=[FileAllowed(app.config["ALLOWED_IMAGE_EXTENSIONS"], "Images only!")])
-   
+    recaptcha = RecaptchaField()
+# class BelongsToOtherFieldOption:
+#     def __init__(self, table, belongs_to, foreign_key=None, message=None):
+#         if not table:
+#             raise AttributeError("""
+#             BelongsToOtherFieldOption validator needs the table parameter
+#             """)
+#         if not belongs_to:
+#             raise AttributeError("""
+#             BelongsToOtherFieldOption validator needs the belongs_to parameter
+#             """)
+#         self.table = table
+#         self.belongs_to = belongs_to
 
+#         if not foreign_key:
+#             foreign_key = belongs_to + "_id"
+#         if not message:
+#             message = "Chosen option is not valid"
+        
+#         self.foreign_key = foreign_key
+#         self.message = message
+
+#     def __call__(self, form, field):
+#         c = get_db().cursor()
+#         try:
+#             c.execute(""" SELECT COUNT(*) FROM {}
+#                       WHERE id = ? AND {} = ?""".format(
+#                            self.table,
+#                            self.foreign_key 
+#                       ),
+#                       (field.data, getattr(form, self.belongs_to).data)
+#                   )
+#         except Exception as e:
+#             raise AttributeError("""
+#             Passed parameters are not correct.{}
+#             """.format(e))
+#         exists = c.fetchone()[0]
+#         if not exists:
+#             raise ValidationError(self.message)
+        
 class NewItemForm(ItemForm):
       submit     = SubmitField("submit")
 
@@ -121,8 +164,8 @@ def exercise():
             c.execute("""INSERT INTO fitness(id,title, description, image)
                         VALUES(?,?,?,?)""",
                         (   new_id,
-                            form.title.data,
-                            form.description.data,
+                            escape(form.title.data),
+                            escape(form.description.data),
                             filename
                         )
                         )
@@ -208,8 +251,8 @@ def edit_item(item_id):
                     WHERE id=?
                     """,
                     (
-                        form.title.data,
-                        form.description.data,
+                        escape(form.title.data),
+                        escape(form.description.data),
                         new_image_filename,
                         item_id,
                     ),
@@ -225,7 +268,7 @@ def edit_item(item_id):
             return redirect(url_for("home"))
 
         form.title.data = item[1]
-        form.description.data = item[2]
+        form.description.data = unescape(item[2])
         # form.image.data = item[3]
 
     return render_template("edit_item.html", form=form, item_id=item_id, item=item)
