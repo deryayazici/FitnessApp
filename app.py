@@ -22,7 +22,7 @@ app.config["IMAGE_UPLOADS"] = os.path.join(basedir, "uploads")
 class ItemForm(FlaskForm):
     title       = StringField("Title", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=3, max=20, message="Input must be between 3 and 20 characters long")])
     description = TextAreaField("Description", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=5, max=500, message="Input must be between 3 and 90 characters long")])
-    image       = FileField("Image", validators=[FileRequired(), FileAllowed(app.config["ALLOWED_IMAGE_EXTENSIONS"], "Images only!")])
+    image       = FileField("Image", validators=[FileAllowed(app.config["ALLOWED_IMAGE_EXTENSIONS"], "Images only!")])
    
 
 class NewItemForm(ItemForm):
@@ -101,40 +101,39 @@ def uploads(filename):
 
 @app.route("/exercise", methods=["GET", "POST"])
 def exercise():
-        if request.method == "POST":
-            conn = get_db()
-            c = conn.cursor()
-            form = NewItemForm()
-        
-            c.execute("SELECT MAX(id) FROM fitness")
-            max_id = c.fetchone()[0] 
+    if request.method == "POST":
+        conn = get_db()
+        c = conn.cursor()
+        form = NewItemForm()
+    
+        c.execute("SELECT MAX(id) FROM fitness")
+        max_id = c.fetchone()[0] 
 
-            if max_id is None:
-                new_id = 1
-            else:
-                new_id = max_id + 1
+        if max_id is None:
+            new_id = 1
+        else:
+            new_id = max_id + 1
+        
+        if form.validate_on_submit() and form.image.validate(form, extra_validators=(FileRequired(),)):
+                
+            filename = save_image_upload(form.image)
             
-            if form.validate_on_submit():
-                    
-                    filename = save_image_upload(form.image)
-                    
-                    c.execute("""INSERT INTO fitness(id,title, description, image)
-                                VALUES(?,?,?,?)""",
-                                (   new_id,
-                                    form.title.data,
-                                    form.description.data,
-                                    filename
-                                )
-                    )
+            c.execute("""INSERT INTO fitness(id,title, description, image)
+                        VALUES(?,?,?,?)""",
+                        (   new_id,
+                            form.title.data,
+                            form.description.data,
+                            filename
+                        )
+                        )
 
-                    conn.commit()
-                    flash("Item {} has been successfully submitted.".format(form.title.data), "success")
-        
-                    return redirect(url_for("home"))
-            flash("No image file selected.", "danger")
-            conn.close()
-            return "No image file selected"
-        return render_template('exercise.html', form=NewItemForm())
+            conn.commit()
+            flash("Item {} has been successfully submitted.".format(form.title.data), "success")
+
+            return redirect(url_for("home"))
+        flash("No image file selected.", "danger")
+        conn.close()
+    return render_template('exercise.html', form=NewItemForm())
 
 def save_image_upload(image):
     format = "%Y%m%dT%H%M%S"
