@@ -270,7 +270,7 @@ def edit_item(item_id):
 
         form.title.data = item[1]
         form.description.data = unescape(item[2])
-        form.image.data = item[3]
+        # form.image.data = item[3]
 
     return render_template("edit_item.html", form=form, item_id=item_id, item=item)
 
