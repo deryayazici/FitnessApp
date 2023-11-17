@@ -21,6 +21,8 @@ app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["jpeg", "jpg", "png"]
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 app.config["IMAGE_UPLOADS"] = os.path.join(basedir, "uploads")
 
+app.config["TESTING"] = True
+
 app.config["RECAPTCHA_PUBLIC_KEY"] = "6Lct3hApAAAAAF3shHdCcXlLhzxvJiWbT2rH56XW"
 app.config["RECAPTCHA_PRIVATE_KEY"] = "6Lct3hApAAAAALPoW_BXUgEtj5rKurAyFGb-6mp9"
 
@@ -28,7 +30,7 @@ class ItemForm(FlaskForm):
     title       = StringField("Title", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=3, max=20, message="Input must be between 3 and 20 characters long")])
     description = TextAreaField("Description", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=5, max=500, message="Input must be between 3 and 90 characters long")])
     image       = FileField("Image", validators=[FileAllowed(app.config["ALLOWED_IMAGE_EXTENSIONS"], "Images only!")])
-    recaptcha = RecaptchaField()
+    
 # class BelongsToOtherFieldOption:
 #     def __init__(self, table, belongs_to, foreign_key=None, message=None):
 #         if not table:
@@ -69,6 +71,7 @@ class ItemForm(FlaskForm):
 #             raise ValidationError(self.message)
         
 class NewItemForm(ItemForm):
+      recaptcha = RecaptchaField()
       submit     = SubmitField("submit")
 
 class EditItemForm(ItemForm):
@@ -175,7 +178,7 @@ def exercise():
             flash("Item {} has been successfully submitted.".format(form.title.data), "success")
 
             return redirect(url_for("home"))
-        flash("Form validation failed.", "danger")
+        # flash("Form validation failed.", "danger")
         conn.close()
     return render_template('exercise.html', form=NewItemForm())
 
@@ -265,7 +268,7 @@ def edit_item(item_id):
         c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
         item = c.fetchone()
         if not item:
-            flash("Item not found", "error")
+            # flash("Item not found", "error")
             return redirect(url_for("home"))
 
         form.title.data = item[1]
