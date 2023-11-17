@@ -220,58 +220,58 @@ def delete_item(item_id):
 
 # -----EDIT ITEM ---------
 
-@app.route("/edit_item/<int:item_id>", methods=["GET", "POST"])
-def edit_item(item_id):
-    with get_db() as conn:
-        c = conn.cursor()
-        form = EditItemForm()
+# @app.route("/edit_item/<int:item_id>", methods=["GET", "POST"])
+# def edit_item(item_id):
+#     with get_db() as conn:
+#         c = conn.cursor()
+#         form = EditItemForm()
 
-        if request.method == "POST":
-            if form.validate_on_submit():
-                c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
-                item = c.fetchone()
+#         if request.method == "POST":
+#             if form.validate_on_submit():
+#                 c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
+#                 item = c.fetchone()
 
-                if not item:
-                    flash("Item not found", "error")
-                    return redirect(url_for("home"))
+#                 if not item:
+#                     flash("Item not found", "error")
+#                     return redirect(url_for("home"))
 
-                existing_image_filename = item[3]
+#                 existing_image_filename = item[3]
 
-                if form.image.data:
-                    new_image_filename = save_image_upload(form.image)
-                    # form.image.save(os.path.join(app.config["IMAGE_UPLOADS"], new_image_filename))
+#                 if form.image.data:
+#                     new_image_filename = save_image_upload(form.image)
+#                     # form.image.save(os.path.join(app.config["IMAGE_UPLOADS"], new_image_filename))
             
-                else:
-                    new_image_filename = existing_image_filename
+#                 else:
+#                     new_image_filename = existing_image_filename
 
-                c.execute(
-                    """
-                    UPDATE fitness
-                    SET title=?, description=?, image=?
-                    WHERE id=?
-                    """,
-                    (
-                        escape(form.title.data),
-                        escape(form.description.data),
-                        new_image_filename,
-                        item_id,
-                    ),
-                )
-                conn.commit()
-                flash("Item {} has been successfully updated.".format(form.title.data), "success")
-                return redirect(url_for("home"))
+#                 c.execute(
+#                     """
+#                     UPDATE fitness
+#                     SET title=?, description=?, image=?
+#                     WHERE id=?
+#                     """,
+#                     (
+#                         escape(form.title.data),
+#                         escape(form.description.data),
+#                         new_image_filename,
+#                         item_id,
+#                     ),
+#                 )
+#                 conn.commit()
+#                 flash("Item {} has been successfully updated.".format(form.title.data), "success")
+#                 return redirect(url_for("home"))
 
-        c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
-        item = c.fetchone()
-        if not item:
-            flash("Item not found", "error")
-            return redirect(url_for("home"))
+#         c.execute("SELECT * FROM fitness WHERE id = ?", (item_id,))
+#         item = c.fetchone()
+#         if not item:
+#             flash("Item not found", "error")
+#             return redirect(url_for("home"))
 
-        form.title.data = item[1]
-        form.description.data = unescape(item[2])
-        # form.image.data = item[3]
+#         form.title.data = item[1]
+#         form.description.data = unescape(item[2])
+#         # form.image.data = item[3]
 
-    return render_template("edit_item.html", form=form, item_id=item_id, item=item)
+#     return render_template("edit_item.html", form=form, item_id=item_id, item=item)
 
 
 
