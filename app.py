@@ -279,9 +279,31 @@ def edit_item(item_id):
 
 
 
-@app.route("/running", methods=["GET","POST"])
+def calculate_calories_burned(distance_miles, weight_pounds):
+
+    distance_km = distance_miles * 1.60934
+    weight_kg = weight_pounds * 0.453592
+    
+    calories_burned_per_km = 0.75 * weight_kg 
+    total_calories_burned = calories_burned_per_km * distance_km
+    return total_calories_burned
+
+@app.route("/running", methods=["GET", "POST"])
 def running():
-     return render_template('running.html')        
+    if request.method == "POST":
+        distance = float(request.form.get("distance", 0.0)) 
+        weight = request.form.get("weight") 
+        
+        if weight and weight.strip(): 
+            weight = float(weight)
+            calories_burned = calculate_calories_burned(distance, weight)
+            return render_template('running.html', calories_burned=calories_burned)
+        
+        error_message = "Please enter a valid weight."
+        return render_template('running.html', error=error_message)
+    
+    return render_template('running.html')
+
 
 def get_db():
      db = getattr(g, "_database", None)
