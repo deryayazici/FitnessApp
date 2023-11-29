@@ -328,6 +328,36 @@ def calculate_calories_burned_walking(distance, weight):
     total_calories_burned = calories_burned_per_km * distance_km
     return int(total_calories_burned)
 
+@app.route("/cycling", methods=["GET", "POST"])
+def cycling():
+    if request.method == "POST":
+        distance = float(request.form.get("distance", 0.0))
+        weight = request.form.get("weight")
+
+        if weight and weight.strip():
+            weight = float(weight)
+            calories_burned = calculate_calories_burned_cycling(distance, weight)
+            return render_template('cycling.html', calories_burned=calories_burned)
+
+        error_message = "Please enter a valid weight."
+        return render_template('cycling.html', error=error_message)
+
+    return render_template('cycling.html')
+
+def calculate_calories_burned_cycling(distance_miles, weight_pounds):
+    distance_km = distance_miles * 1.60934
+    weight_kg = weight_pounds * 0.453592
+
+    average_speed_kmh = 15
+    calories_burned_per_hour_per_kg = 8.5
+    total_hours = distance_km / average_speed_kmh
+
+    total_calories_burned = calories_burned_per_hour_per_kg * weight_kg * total_hours
+
+    return int(total_calories_burned)
+
+
+
 def get_db():
      db = getattr(g, "_database", None)
      if db is None:
