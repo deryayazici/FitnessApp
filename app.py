@@ -319,6 +319,7 @@ def walking():
         return render_template('walking.html', error=error_message)
 
     return render_template('walking.html')
+  
 
 def calculate_calories_burned_walking(distance, weight):
     distance_km = distance_miles * 1.60934
