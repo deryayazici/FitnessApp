@@ -304,6 +304,29 @@ def running():
     
     return render_template('running.html')
 
+@app.route("/walking", methods=["GET", "POST"])
+def walking():
+    if request.method == "POST":
+        distance = float(request.form.get("distance", 0.0))
+        weight = request.form.get("weight")
+
+        if weight and weight.strip():
+            weight = float(weight)
+            calories_burned = calculate_calories_burned_walking(distance, weight)
+            return render_template('walking.html', calories_burned=calories_burned)
+
+        error_message = "Please enter a valid weight."
+        return render_template('walking.html', error=error_message)
+
+    return render_template('walking.html')
+
+def calculate_calories_burned_walking(distance, weight):
+    distance_km = distance_miles * 1.60934
+    weight_kg = weight_pounds * 0.453592
+    
+    calories_burned_per_km = 0.5 * weight_kg
+    total_calories_burned = calories_burned_per_km * distance_km
+    return int(total_calories_burned)
 
 def get_db():
      db = getattr(g, "_database", None)
