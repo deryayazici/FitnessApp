@@ -11,6 +11,8 @@ import sqlite3
 import os
 import datetime
 from secrets import token_hex
+from running import Running
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -288,21 +290,32 @@ def calculate_calories_burned(distance_miles, weight_pounds):
     total_calories_burned = calories_burned_per_km * distance_km
     return int(total_calories_burned)
 
+# @app.route("/running", methods=["GET", "POST"])
+# def running():
+#     if request.method == "POST":
+#         distance = float(request.form.get("distance", 0.0)) 
+#         weight = request.form.get("weight") 
+        
+#         if weight and weight.strip(): 
+#             weight = float(weight)
+#             calories_burned = calculate_calories_burned(distance, weight)
+#             return render_template('running.html', calories_burned=calories_burned)
+        
+#         error_message = "Please enter a valid weight."
+#         return render_template('running.html', error=error_message)
+    
+#     return render_template('running.html')
 @app.route("/running", methods=["GET", "POST"])
 def running():
     if request.method == "POST":
-        distance = float(request.form.get("distance", 0.0)) 
-        weight = request.form.get("weight") 
-        
-        if weight and weight.strip(): 
-            weight = float(weight)
-            calories_burned = calculate_calories_burned(distance, weight)
-            return render_template('running.html', calories_burned=calories_burned)
-        
-        error_message = "Please enter a valid weight."
-        return render_template('running.html', error=error_message)
-    
+        distance = float(request.form.get("distance", 0.0))
+        weight = float(request.form.get("weight", 0.0))
+        running_activity = Running(distance, weight)
+        calories_burned = running_activity.calculate_calories_burned()
+        return render_template('running.html', calories_burned=calories_burned)
+
     return render_template('running.html')
+
 
 @app.route("/walking", methods=["GET", "POST"])
 def walking():
