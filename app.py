@@ -281,14 +281,14 @@ def edit_item(item_id):
 
 
 
-def calculate_calories_burned(distance_miles, weight_pounds):
+# def calculate_calories_burned(distance_miles, weight_pounds):
 
-    distance_km = distance_miles * 1.60934
-    weight_kg = weight_pounds * 0.453592
+#     distance_km = distance_miles * 1.60934
+#     weight_kg = weight_pounds * 0.453592
     
-    calories_burned_per_km = 0.75 * weight_kg 
-    total_calories_burned = calories_burned_per_km * distance_km
-    return int(total_calories_burned)
+#     calories_burned_per_km = 0.75 * weight_kg 
+#     total_calories_burned = calories_burned_per_km * distance_km
+#     return int(total_calories_burned)
 
 # @app.route("/running", methods=["GET", "POST"])
 # def running():
