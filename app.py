@@ -12,6 +12,7 @@ import os
 import datetime
 from secrets import token_hex
 from running import Running
+from walking import Walking
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -323,24 +324,30 @@ def walking():
         distance = float(request.form.get("distance", 0.0))
         weight = request.form.get("weight")
 
-        if weight and weight.strip():
-            weight = float(weight)
-            calories_burned = calculate_calories_burned_walking(distance, weight)
-            return render_template('walking.html', calories_burned=calories_burned)
-
-        error_message = "Please enter a valid weight."
-        return render_template('walking.html', error=error_message)
+        walking_activity = Walking(distance, weight)
+        calories_burned = walking_activity.calculate_calories_burned()
+        return render_template('walking.html', calories_burned=calories_burned)
 
     return render_template('walking.html')
+
+    #     if weight and weight.strip():
+    #         weight = float(weight)
+    #         calories_burned = calculate_calories_burned_walking(distance, weight)
+    #         return render_template('walking.html', calories_burned=calories_burned)
+
+    #     error_message = "Please enter a valid weight."
+    #     return render_template('walking.html', error=error_message)
+
+    # return render_template('walking.html')
   
 
-def calculate_calories_burned_walking(distance, weight):
-    distance_km = distance_miles * 1.60934
-    weight_kg = weight_pounds * 0.453592
+# def calculate_calories_burned_walking(distance, weight):
+#     distance_km = distance_miles * 1.60934
+#     weight_kg = weight_pounds * 0.453592
     
-    calories_burned_per_km = 0.5 * weight_kg
-    total_calories_burned = calories_burned_per_km * distance_km
-    return int(total_calories_burned)
+#     calories_burned_per_km = 0.5 * weight_kg
+#     total_calories_burned = calories_burned_per_km * distance_km
+#     return int(total_calories_burned)
 
 @app.route("/cycling", methods=["GET", "POST"])
 def cycling():
