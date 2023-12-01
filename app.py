@@ -13,6 +13,7 @@ import datetime
 from secrets import token_hex
 from running import Running
 from walking import Walking
+from cycling import Cycling
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -353,29 +354,37 @@ def walking():
 def cycling():
     if request.method == "POST":
         distance = float(request.form.get("distance", 0.0))
-        weight = request.form.get("weight")
-
-        if weight and weight.strip():
-            weight = float(weight)
-            calories_burned = calculate_calories_burned_cycling(distance, weight)
-            return render_template('cycling.html', calories_burned=calories_burned)
-
-        error_message = "Please enter a valid weight."
-        return render_template('cycling.html', error=error_message)
+        weight = request.form.get("weight",0.0)
+     
+        cycling_activity = Cycling(distance, weight)
+        calories_burned = cycling_activity.calculate_calories_burned()
+        return render_template('cycling.html', calories_burned=calories_burned)
 
     return render_template('cycling.html')
 
-def calculate_calories_burned_cycling(distance_miles, weight_pounds):
-    distance_km = distance_miles * 1.60934
-    weight_kg = weight_pounds * 0.453592
 
-    average_speed_kmh = 15
-    calories_burned_per_hour_per_kg = 8.5
-    total_hours = distance_km / average_speed_kmh
 
-    total_calories_burned = calories_burned_per_hour_per_kg * weight_kg * total_hours
+    #     if weight and weight.strip():
+    #         weight = float(weight)
+    #         calories_burned = calculate_calories_burned_cycling(distance, weight)
+    #         return render_template('cycling.html', calories_burned=calories_burned)
 
-    return int(total_calories_burned)
+    #     error_message = "Please enter a valid weight."
+    #     return render_template('cycling.html', error=error_message)
+
+    # return render_template('cycling.html')
+
+# def calculate_calories_burned_cycling(distance_miles, weight_pounds):
+#     distance_km = distance_miles * 1.60934
+#     weight_kg = weight_pounds * 0.453592
+
+#     average_speed_kmh = 15
+#     calories_burned_per_hour_per_kg = 8.5
+#     total_hours = distance_km / average_speed_kmh
+
+#     total_calories_burned = calories_burned_per_hour_per_kg * weight_kg * total_hours
+
+#     return int(total_calories_burned)
 
 
 
