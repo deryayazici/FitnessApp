@@ -354,7 +354,7 @@ def walking():
 def cycling():
     if request.method == "POST":
         distance = float(request.form.get("distance", 0.0))
-        weight = request.form.get("weight",0.0)
+        weight = float(request.form.get("weight", 0.0))  
      
         cycling_activity = Cycling(distance, weight)
         calories_burned = cycling_activity.calculate_calories_burned()
