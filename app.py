@@ -322,7 +322,7 @@ def running():
 def walking():
     if request.method == "POST":
         distance = float(request.form.get("distance", 0.0))
-        weight = request.form.get("weight")
+        weight = float(request.form.get("weight", 0.0))
 
         walking_activity = Walking(distance, weight)
         calories_burned = walking_activity.calculate_calories_burned()
