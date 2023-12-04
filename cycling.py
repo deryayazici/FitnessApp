@@ -11,8 +11,8 @@ class Cycling(PhysicalActivity):
 
         average_speed_kmh = 15
         calories_burned_per_hour_per_kg = 8.5
-        total_hours = distance_km / average_speed_kmh
+        total_hours = int(distance_km / average_speed_kmh)
 
-        total_calories_burned = int(calories_burned_per_hour_per_kg )* weight_kg * total_hours
+        total_calories_burned = calories_burned_per_hour_per_kg * weight_kg * total_hours
 
-        return int(total_calories_burned)
+        return (total_calories_burned)

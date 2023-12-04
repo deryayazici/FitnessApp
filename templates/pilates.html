@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Pilates Tracker{% endblock %}
+
+{% block content %}
+    <div class="mt-5"> 
+        <h2 class="mb-4">Pilates Session Log</h2>
+        <form action="/submit-pilates-data" method="post" class="needs-validation" novalidate>
+            
+            <div class="mb-3">
+                <label for="date" class="form-label">Date:</label>
+                <input type="date" class="form-control" id="date" name="date" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="duration" class="form-label">Duration (in minutes):</label>
+                <input type="number" class="form-control" id="duration" name="duration" placeholder="Duration in minutes" min="1" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="intensity" class="form-label">Intensity Level:</label>
+                <select class="form-select" id="intensity" name="intensity">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="pilates_type" class="form-label">Type of Pilates:</label>
+                <select class="form-select" id="pilates_type" name="pilates_type">
+                    <option value="mat">Mat Pilates</option>
+                    <option value="reformer">Reformer Pilates</option>
+            
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="exercises" class="form-label">Exercises Performed:</label>
+                <textarea class="form-control" id="exercises" name="exercises" placeholder="List of exercises performed" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="effort" class="form-label">Effort Level (1-10):</label>
+                <input type="range" class="form-range" id="effort" name="effort" min="1" max="10">
+            </div>
+
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes:</label>
+                <textarea class="form-control" id="notes" name="notes" placeholder="Notes about the session" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="progress" class="form-label">Progress/Achievements:</label>
+                <input type="text" class="form-control" id="progress" name="progress" placeholder="Enter any progress or achievements">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Log Pilates Session</button>
+        </form>
+    </div>
+{% endblock %}
