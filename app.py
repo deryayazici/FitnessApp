@@ -14,12 +14,14 @@ from secrets import token_hex
 from running import Running
 from walking import Walking
 from cycling import Cycling
+from sign_in import create_user, login_user
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 app = Flask(__name__)
+
 app.config["SECRET_KEY"] = "secretkey"
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["jpeg", "jpg", "png"]
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
@@ -90,6 +92,37 @@ class DeleteItemForm(FlaskForm):
 class FilterForm(FlaskForm):
     title  = StringField("Title")
     submit = SubmitField("Filter")
+
+#-------SIGN-IN ROUTE--------
+
+
+@app.route('/sign_in', methods=['GET', 'POST'])
+def sign_in():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        action = request.form['action']
+        if action == 'signup':
+            result = create_user(username, password)
+            if result == "User created successfully":
+                flash(result, 'success')
+                return redirect(url_for('home'))  
+            else:
+                flash(result, 'error')
+        elif action == 'login':
+            result = login_user(username, password)
+            if result == "Login successful":
+                flash(result, 'success')
+                return redirect(url_for('home')) 
+            else:
+                flash(result, 'error')
+
+    return redirect(url_for('home'))
+
+
+
+
 
 # ---- SINGLE ITEM VIEW ------
 @app.route("/item/<int:item_id>")
