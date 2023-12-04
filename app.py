@@ -102,7 +102,8 @@ def sign_in():
         username = request.form['username']
         password = request.form['password']
         
-        action = request.form['action']
+        # action = request.form['action']
+        action = request.form.get('action', 'default_action')
         if action == 'signup':
             result = create_user(username, password)
             if result == "User created successfully":
