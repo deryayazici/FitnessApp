@@ -1,3 +1,4 @@
+from flask import g
 import sqlite3
 
 def get_db():
@@ -5,21 +6,24 @@ def get_db():
         g.db = sqlite3.connect("users.db")
     return g.db
 
+def init_db():
+    with get_db() as conn:
 
-conn = get_db
-c  = conn.cursor()
+        c  = conn.cursor()
 
-c.execute('''
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY,
-    username TEXT NOT NULL UNIQUE,
-    email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL
-)
-''')
-conn.commit()
+        c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            username TEXT NOT NULL UNIQUE,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+        )
+        ''')
+        conn.commit()
 
 def create_user(username, password,email):
+    conn = get_db()
+    c = conn.cursor()
 
     c.execute("SELECT username FROM users WHERE username = ?", (username,))
     if c.fetchone():
@@ -27,7 +31,7 @@ def create_user(username, password,email):
 
     try:
         
-        c.execute("INSERT INTO users (username, password, email) VALUES (?, ?,?)", (username, password,email))
+        c.execute("INSERT INTO users (username, password, email) VALUES (?, ?,?)", (username, password, email))
         conn.commit()
         return "User created successfully"
     except sqlite3.IntegrityError:

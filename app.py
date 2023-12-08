@@ -14,7 +14,7 @@ from secrets import token_hex
 from running import Running
 from walking import Walking
 from cycling import Cycling
-from sign_in import create_user, login_user
+from sign_in import create_user, init_db
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -103,17 +103,6 @@ def sign_in():
         password = request.form['password']
         email = request.form['email']
 
-        # action = request.form['action']
-
-        # action = request.form.get('action', 'default_action')
-        # if action == '/first_time_sign_on':
-        #     result = create_user(username, password, email)
-        #     if result == "User created successfully":
-        #         flash(result, 'success')
-        #         return redirect(url_for('home'))  
-        #     else:
-        #         flash(result, 'error')
-
         result = create_user(username, password, email)
 
         if result == "User created successfully":
@@ -123,6 +112,14 @@ def sign_in():
             flash(result, 'error')
 
     return redirect(url_for('home'))
+
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+with app.app_context():
+    init_db()
 
 # ---- SINGLE ITEM VIEW ------
 @app.route("/item/<int:item_id>")
