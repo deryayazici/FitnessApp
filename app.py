@@ -101,29 +101,28 @@ def sign_in():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
+        email = request.form['email']
+
         # action = request.form['action']
-        action = request.form.get('action', 'default_action')
-        if action == 'signup':
-            result = create_user(username, password)
-            if result == "User created successfully":
-                flash(result, 'success')
-                return redirect(url_for('home'))  
-            else:
-                flash(result, 'error')
-        elif action == 'login':
-            result = login_user(username, password)
-            if result == "Login successful":
-                flash(result, 'success')
-                return redirect(url_for('home')) 
-            else:
-                flash(result, 'error')
+
+        # action = request.form.get('action', 'default_action')
+        # if action == '/first_time_sign_on':
+        #     result = create_user(username, password, email)
+        #     if result == "User created successfully":
+        #         flash(result, 'success')
+        #         return redirect(url_for('home'))  
+        #     else:
+        #         flash(result, 'error')
+
+        result = create_user(username, password, email)
+
+        if result == "User created successfully":
+            flash(result, 'success')
+            return redirect(url_for('home'))
+        else:
+            flash(result, 'error')
 
     return redirect(url_for('home'))
-
-
-
-
 
 # ---- SINGLE ITEM VIEW ------
 @app.route("/item/<int:item_id>")
