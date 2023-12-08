@@ -7,12 +7,13 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL
 )
 ''')
 conn.commit()
 
-def create_user(username, password):
+def create_user(username, password,email):
 
     cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
     if cursor.fetchone():
@@ -20,7 +21,7 @@ def create_user(username, password):
 
     try:
         
-        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        cursor.execute("INSERT INTO users (username, password, email) VALUES (?, ?,?)", (username, password,email))
         conn.commit()
         return "User created successfully"
     except sqlite3.IntegrityError:
