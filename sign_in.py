@@ -13,12 +13,18 @@ CREATE TABLE IF NOT EXISTS users (
 conn.commit()
 
 def create_user(username, password):
+
+    cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
+    if cursor.fetchone():
+        return "Username already exists. Please choose another one."
+
     try:
+        
         cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
         conn.commit()
         return "User created successfully"
     except sqlite3.IntegrityError:
-        return "Username already exists"
+        return "There was an error creating the user."
 
 def login_user(username, password):
     cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))

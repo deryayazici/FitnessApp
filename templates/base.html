@@ -60,15 +60,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script> 
     
     
-    <div class="modal fade" id="signInModal" tabindex="-1" aria-labelledby="signInModalLabel" aria-hidden="true">
+    <div class="modal fade" id="firstTimeSignInModal" tabindex="-1" aria-labelledby="firstTimeSignInModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="signInModalLabel">Sign In / Log In</h5>
+                    <h5 class="modal-title" id="firstTimeSignInModalLabel">Sign In</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="/sign_in" method="post">
+                    <form action="/first_time_sign_on" method="post">
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="username" name="username" required>
@@ -77,13 +77,17 @@
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        <button type="submit" class="btn btn-primary" name="action" value="login">Sign In</button>
-                        <button type="submit" class="btn btn-secondary" name="action" value="signup">Sign Up</button>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" name="action" value="firstTimeSignIn">Sign On</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    
     
   
   
