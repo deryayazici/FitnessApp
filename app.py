@@ -1,6 +1,6 @@
 import sys
 from typing import Any
-from flask import Flask, render_template, request, redirect, url_for, g, send_from_directory, flash
+from flask import Flask, render_template, request, redirect, session, url_for, g, send_from_directory, flash
 from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileAllowed, FileRequired
 from wtforms import StringField, TextAreaField, FileField, SubmitField
@@ -94,24 +94,77 @@ class FilterForm(FlaskForm):
     submit = SubmitField("Filter")
 
 #-------SIGN-IN ROUTE--------
+DATABASE = 'users.db'
 
+def get_db_connection():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
 
-@app.route('/sign_in', methods=['GET', 'POST'])
-def sign_in():
+def init_db():
+    conn = get_db_connection()
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            first_name TEXT,
+            last_name TEXT,
+            username TEXT NOT NULL UNIQUE,
+            email TEXT,
+            password TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    # Determine which form to display based on query parameter.
+    form_type = request.args.get('form', 'login')
+    
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        email = request.form['email']
+        action = request.form.get('action')
+        if action == 'login':
+            username = request.form['username']
+            password = request.form['password']
+            conn = get_db_connection()
+            user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+            conn.close()
+            if user:
+                if password == user['password']:
+                    session['user'] = username
+                    return redirect(url_for('home'))
+                else:
+                    flash("Incorrect password. Please try again.")
+            else:
+                flash("User not found. Please register.")
+            # Stay on login form if login fails.
+            form_type = 'login'
+        elif action == 'signup':
+            first_name = request.form['first_name']
+            last_name = request.form['last_name']
+            username = request.form['username']
+            email = request.form['email']
+            password = request.form['password']
+            conn = get_db_connection()
+            try:
+                conn.execute(
+                    "INSERT INTO users (first_name, last_name, username, email, password) VALUES (?, ?, ?, ?, ?)",
+                    (first_name, last_name, username, email, password)
+                )
+                conn.commit()
+                flash("Registration successful! Please log in.")
+                # After successful registration, show the login form.
+                form_type = 'login'
+            except sqlite3.IntegrityError:
+                flash("Username already exists. Please choose another.")
+                form_type = 'signup'
+            finally:
+                conn.close()
+    return render_template('login.html', form_type=form_type)
 
-        result = create_user(username, password, email)
-
-        if result == "User created successfully":
-            flash(result, 'success')
-            return redirect(url_for('home'))
-        else:
-            flash(result, 'error')
-
-    return redirect(url_for('home'))
+    return redirect(url_for('/home'))
 
 def close_connection(exception):
     db = getattr(g, '_database', None)
@@ -121,7 +174,7 @@ def close_connection(exception):
 with app.app_context():
     init_db()
 
-# ---- SINGLE ITEM VIEW ------
+#  SINGLE ITEM VIEW 
 @app.route("/item/<int:item_id>")
 def item(item_id):
     c = get_db().cursor()
@@ -150,7 +203,7 @@ def item(item_id):
     return redirect(url_for("home")) 
 
 # ----------- DISPLAY ALL ITEMS -----------
-@app.route("/")
+@app.route("/home")
 def home():
     conn = get_db()
     c = conn.cursor()
