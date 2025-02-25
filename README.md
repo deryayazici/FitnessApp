@@ -1,18 +1,31 @@
 # FitnessApp
 FitnessApp is a Flask-based web application designed for fitness enthusiasts. 
 
-## Features
+## Technologies Used
+-**Python**: Core programming language.
+
+-**Flask**: Web framework for handling routes and sessions.
+
+-**SQLite**: Lightweight database for storing user and fitness data.
+
+-**HTML/CSS**: Frontend design.
+
+## Features Available
 
 - **User Authentication**
   - Login with username and password.
   - Sign-up with additional fields.
+- **Dynamic Fitness Content**
+   - Displays fitness items such as title, description, and images.
+   - Automatically updates as new content is added to the database.
 - **Security**
   - Google reCAPTCHA integration to prevent bot sign-ups and logins.
 - **Database Integration**
    - SQLite is used to store user data and fitness items.
-- **Dynamic Home Page**
-   - The home page displays fitness items (e.g. title, description, image) from the database.
+- **Responsive Interface**
+  - Clean, easy-to-use interface for accessing all app features.
 
+    
 ## Prerequisites 
 - Python 3.7 or higher
 - pip (Python package installer)
