@@ -1,56 +1,64 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>{% if form_type == 'signup' %}Register{% else %}Login{% endif %}</title>
-</head>
-<body>
-  <!-- Flash messages -->
+{% extends "base.html" %}
+
+{% block content %}
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+  <!-- Display flash messages -->
   {% with messages = get_flashed_messages() %}
     {% if messages %}
-      <ul>
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-      </ul>
+      <!-- <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul> -->
     {% endif %}
   {% endwith %}
 
-  {% if form_type == 'signup' %}
-    <h2>Register</h2>
-    <form action="{{ url_for('index') }}" method="post">
-      <input type="hidden" name="action" value="signup">
-      <label for="first_name">First Name:</label>
-      <input type="text" name="first_name" required><br><br>
-      
-      <label for="last_name">Last Name:</label>
-      <input type="text" name="last_name" required><br><br>
-      
-      <label for="username">Username:</label>
-      <input type="text" name="username" required><br><br>
-      
-      <label for="email">Email:</label>
-      <input type="email" name="email" required><br><br>
-      
-      <label for="password">Password:</label>
-      <input type="password" name="password" required><br><br>
-      
-      <input type="submit" value="Register">
+  {% if session.pending_user %}
+    <!-- Stage 2: Inline reCAPTCHA widget -->
+    <!-- <h2>Please complete the reCAPTCHA to continue</h2> -->
+    <form action="{{ url_for('index', form=form_type) }}" method="post">
+      <div class="g-recaptcha" data-sitekey="6LeDd-EqAAAAACGxEoc3BSg4xv-cRw2k6vwipdTy"></div><br>
+      <input type="submit" value="Verify">
     </form>
-    <p>Already have an account? <a href="{{ url_for('index', form='login') }}">Login</a></p>
+
+
   {% else %}
-    <h2>Login</h2>
-    <form action="{{ url_for('index') }}" method="post">
-      <input type="hidden" name="action" value="login">
-      <label for="username">Username:</label>
-      <input type="text" name="username" required><br><br>
-      
-      <label for="password">Password:</label>
-      <input type="password" name="password" required><br><br>
-      
-      <input type="submit" value="Login">
-    </form>
-    <p>Don't have an account? <a href="{{ url_for('index', form='signup') }}">Register</a></p>
+    {% if form_type == 'signup' %}
+      <h2>Register</h2>
+      <form action="{{ url_for('index', form='signup') }}" method="post">
+        <input type="hidden" name="action" value="signup">
+        <label for="first_name">First Name:</label>
+        <input type="text" name="first_name" required><br><br>
+        
+        <label for="last_name">Last Name:</label>
+        <input type="text" name="last_name" required><br><br>
+        
+        <label for="username">Username:</label>
+        <input type="text" name="username" required><br><br>
+        
+        <label for="email">Email:</label>
+        <input type="email" name="email" required><br><br>
+        
+        <label for="password">Password:</label>
+        <input type="password" name="password" required><br><br>
+        
+        <input type="submit" value="Register">
+      </form>
+      <p>Already have an account? <a href="{{ url_for('index', form='login') }}">Login</a></p>
+    {% else %}
+      <h2>Login</h2>
+      <form action="{{ url_for('index', form='login') }}" method="post">
+        <input type="hidden" name="action" value="login">
+        <label for="username">Username:</label>
+        <input type="text" name="username" required><br><br>
+        
+        <label for="password">Password:</label>
+        <input type="password" name="password" required><br><br>
+        
+        <input type="submit" value="Login">
+      </form>
+      <p>Don't have an account? <a href="{{ url_for('index', form='signup') }}">Register</a></p>
+    {% endif %}
   {% endif %}
-</body>
-</html>
+{% endblock %}

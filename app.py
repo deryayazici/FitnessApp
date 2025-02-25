@@ -1,6 +1,7 @@
 import sys
+import requests
 from typing import Any
-from flask import Flask, render_template, request, redirect, session, url_for, g, send_from_directory, flash
+from flask import Flask, render_template, request, redirect, request_finished, session, url_for, g, send_from_directory, flash
 from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileAllowed, FileRequired
 from wtforms import StringField, TextAreaField, FileField, SubmitField
@@ -29,55 +30,20 @@ app.config["IMAGE_UPLOADS"] = os.path.join(basedir, "uploads")
 
 app.config["TESTING"] = True
 
-app.config["RECAPTCHA_PUBLIC_KEY"] = "6Lct3hApAAAAAF3shHdCcXlLhzxvJiWbT2rH56XW"
-app.config["RECAPTCHA_PRIVATE_KEY"] = "6Lct3hApAAAAALPoW_BXUgEtj5rKurAyFGb-6mp9"
+# app.config["RECAPTCHA_PUBLIC_KEY"] = "6Lct3hApAAAAAF3shHdCcXlLhzxvJiWbT2rH56XW"
+# app.config["RECAPTCHA_PRIVATE_KEY"] = "6Lct3hApAAAAALPoW_BXUgEtj5rKurAyFGb-6mp9"
+
+RECAPTCHA_SITE_KEY = "6LeDd-EqAAAAACGxEoc3BSg4xv-cRw2k6vwipdTy"       
+RECAPTCHA_SECRET_KEY = "6LeDd-EqAAAAADHpnkAH-VMTEJ_iEM0lz4YvSoeg"
 
 class ItemForm(FlaskForm):
     title       = StringField("Title", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=3, max=20, message="Input must be between 3 and 20 characters long")])
     description = TextAreaField("Description", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"), Length(min=5, max=500, message="Input must be between 3 and 90 characters long")])
     image       = FileField("Image", validators=[FileAllowed(app.config["ALLOWED_IMAGE_EXTENSIONS"], "Images only!")])
     
-# class BelongsToOtherFieldOption:
-#     def __init__(self, table, belongs_to, foreign_key=None, message=None):
-#         if not table:
-#             raise AttributeError("""
-#             BelongsToOtherFieldOption validator needs the table parameter
-#             """)
-#         if not belongs_to:
-#             raise AttributeError("""
-#             BelongsToOtherFieldOption validator needs the belongs_to parameter
-#             """)
-#         self.table = table
-#         self.belongs_to = belongs_to
-
-#         if not foreign_key:
-#             foreign_key = belongs_to + "_id"
-#         if not message:
-#             message = "Chosen option is not valid"
-        
-#         self.foreign_key = foreign_key
-#         self.message = message
-
-#     def __call__(self, form, field):
-#         c = get_db().cursor()
-#         try:
-#             c.execute(""" SELECT COUNT(*) FROM {}
-#                       WHERE id = ? AND {} = ?""".format(
-#                            self.table,
-#                            self.foreign_key 
-#                       ),
-#                       (field.data, getattr(form, self.belongs_to).data)
-#                   )
-#         except Exception as e:
-#             raise AttributeError("""
-#             Passed parameters are not correct.{}
-#             """.format(e))
-#         exists = c.fetchone()[0]
-#         if not exists:
-#             raise ValidationError(self.message)
         
 class NewItemForm(ItemForm):
-      recaptcha = RecaptchaField()
+    #   recaptcha = RecaptchaField()
       submit     = SubmitField("submit")
 
 class EditItemForm(ItemForm):
@@ -118,11 +84,92 @@ def init_db():
 
 init_db()
 
+# @app.route('/', methods=['GET', 'POST'])
+# def index():
+#     # Determine which form to display based on query parameter.
+#     form_type = request.args.get('form', 'login')
+    
+#     if request.method == 'POST':
+#         action = request.form.get('action')
+#         if action == 'login':
+#             username = request.form['username']
+#             password = request.form['password']
+#             conn = get_db_connection()
+#             user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+#             conn.close()
+#             if user:
+#                 if password == user['password']:
+#                     session['user'] = username
+#                     recaptcha = RecaptchaField()
+#                     return redirect(url_for('home'))
+#                 else:
+#                     flash("Incorrect password. Please try again.")
+#             else:
+#                 flash("User not found. Please register.")
+#             # Stay on login form if login fails.
+#             form_type = 'login'
+#         elif action == 'signup':
+#             first_name = request.form['first_name']
+#             last_name = request.form['last_name']
+#             username = request.form['username']
+#             email = request.form['email']
+#             password = request.form['password']
+#             conn = get_db_connection()
+#             try:
+#                 conn.execute(
+#                     "INSERT INTO users (first_name, last_name, username, email, password) VALUES (?, ?, ?, ?, ?)",
+#                     (first_name, last_name, username, email, password)
+#                 )
+#                 conn.commit()
+#                 flash("Registration successful! Please log in.")
+#                 # After successful registration, show the login form.
+#                 form_type = 'login'
+#             except sqlite3.IntegrityError:
+#                 flash("Username already exists. Please choose another.")
+#                 form_type = 'signup'
+#             finally:
+#                 conn.close()
+#     return render_template('login.html', form_type=form_type)
+
+#     return redirect(url_for('/home'))
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # Determine which form to display based on query parameter.
-    form_type = request.args.get('form', 'login')
+    """
+    Handles both login and sign-up in two stages.
+    Stage 1: Validate credentials (login/sign-up) without reCAPTCHA.
+    Stage 2: If credentials are valid, store username in session as 'pending_user'
+             and re-render the page to show the reCAPTCHA widget.
+    When the reCAPTCHA response is submitted, verify it and then log the user in.
+    """
+    form_type = request.args.get('form', 'login')  # 'login' or 'signup'
     
+    # Stage 2: reCAPTCHA verification step
+    if request.method == 'POST' and 'g-recaptcha-response' in request.form:
+        recaptcha_response = request.form.get('g-recaptcha-response')
+        if not recaptcha_response:
+            flash("Please complete the reCAPTCHA.")
+            return redirect(url_for('index', form=form_type))
+        payload = {
+            'secret': RECAPTCHA_SECRET_KEY,
+            'response': recaptcha_response
+        }
+        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=payload)
+        result = r.json()
+        if result.get("success"):
+            # reCAPTCHA verified; finalize login/registration
+            pending_user = session.pop('pending_user', None)
+            if pending_user:
+                session['user'] = pending_user
+                return redirect(url_for('home'))
+            else:
+                flash("Session expired. Please try logging in again.")
+                return redirect(url_for('index', form=form_type))
+        else:
+            flash("reCAPTCHA verification failed. Please try again.")
+            return redirect(url_for('index', form=form_type))
+    
+    # Stage 1: Process credentials if reCAPTCHA is not yet present
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'login':
@@ -131,40 +178,35 @@ def index():
             conn = get_db_connection()
             user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
             conn.close()
-            if user:
-                if password == user['password']:
-                    session['user'] = username
-                    return redirect(url_for('home'))
-                else:
-                    flash("Incorrect password. Please try again.")
+            if user and password == user['password']:
+                # Credentials valid; store pending user and ask for reCAPTCHA
+                session['pending_user'] = username
+                flash("Credentials verified. Please complete the reCAPTCHA to continue.")
+                return redirect(url_for('index', form='login'))
             else:
-                flash("User not found. Please register.")
-            # Stay on login form if login fails.
-            form_type = 'login'
+                flash("Invalid username or password.")
         elif action == 'signup':
             first_name = request.form['first_name']
             last_name = request.form['last_name']
             username = request.form['username']
             email = request.form['email']
             password = request.form['password']
-            conn = get_db_connection()
             try:
+                conn = get_db_connection()
                 conn.execute(
                     "INSERT INTO users (first_name, last_name, username, email, password) VALUES (?, ?, ?, ?, ?)",
                     (first_name, last_name, username, email, password)
                 )
                 conn.commit()
-                flash("Registration successful! Please log in.")
-                # After successful registration, show the login form.
-                form_type = 'login'
+                conn.close()
+                session['pending_user'] = username
+                flash("Registration successful! Please complete the reCAPTCHA to finalize login.")
+                return redirect(url_for('index', form='signup'))
             except sqlite3.IntegrityError:
                 flash("Username already exists. Please choose another.")
-                form_type = 'signup'
-            finally:
-                conn.close()
-    return render_template('login.html', form_type=form_type)
+    
+    return render_template('login.html', form_type=form_type, recaptcha_site_key=RECAPTCHA_SITE_KEY)
 
-    return redirect(url_for('/home'))
 
 def close_connection(exception):
     db = getattr(g, '_database', None)
