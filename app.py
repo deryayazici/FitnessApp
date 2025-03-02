@@ -43,7 +43,6 @@ class ItemForm(FlaskForm):
     
         
 class NewItemForm(ItemForm):
-    #   recaptcha = RecaptchaField()
       submit     = SubmitField("submit")
 
 class EditItemForm(ItemForm):
@@ -84,64 +83,8 @@ def init_db():
 
 init_db()
 
-# @app.route('/', methods=['GET', 'POST'])
-# def index():
-#     # Determine which form to display based on query parameter.
-#     form_type = request.args.get('form', 'login')
-    
-#     if request.method == 'POST':
-#         action = request.form.get('action')
-#         if action == 'login':
-#             username = request.form['username']
-#             password = request.form['password']
-#             conn = get_db_connection()
-#             user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
-#             conn.close()
-#             if user:
-#                 if password == user['password']:
-#                     session['user'] = username
-#                     recaptcha = RecaptchaField()
-#                     return redirect(url_for('home'))
-#                 else:
-#                     flash("Incorrect password. Please try again.")
-#             else:
-#                 flash("User not found. Please register.")
-#             # Stay on login form if login fails.
-#             form_type = 'login'
-#         elif action == 'signup':
-#             first_name = request.form['first_name']
-#             last_name = request.form['last_name']
-#             username = request.form['username']
-#             email = request.form['email']
-#             password = request.form['password']
-#             conn = get_db_connection()
-#             try:
-#                 conn.execute(
-#                     "INSERT INTO users (first_name, last_name, username, email, password) VALUES (?, ?, ?, ?, ?)",
-#                     (first_name, last_name, username, email, password)
-#                 )
-#                 conn.commit()
-#                 flash("Registration successful! Please log in.")
-#                 # After successful registration, show the login form.
-#                 form_type = 'login'
-#             except sqlite3.IntegrityError:
-#                 flash("Username already exists. Please choose another.")
-#                 form_type = 'signup'
-#             finally:
-#                 conn.close()
-#     return render_template('login.html', form_type=form_type)
-
-#     return redirect(url_for('/home'))
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    """
-    Handles both login and sign-up in two stages.
-    Stage 1: Validate credentials (login/sign-up) without reCAPTCHA.
-    Stage 2: If credentials are valid, store username in session as 'pending_user'
-             and re-render the page to show the reCAPTCHA widget.
-    When the reCAPTCHA response is submitted, verify it and then log the user in.
-    """
     form_type = request.args.get('form', 'login')  # 'login' or 'signup'
     
     # Stage 2: reCAPTCHA verification step
