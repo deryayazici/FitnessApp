@@ -3,4 +3,4 @@ class PhysicalActivity:
         self.weight = weight
 
     def calculate_calories_burned(self):
-        raise NotImplementedError("This method should be implemented by subclasses.")
+        raise NotImplementedError()
